@@ -1,0 +1,6 @@
+{
+  "name": "ORCA — Marine Intelligence Platform",
+  "description": "Next-generation marine intelligence integrating Earth observation satellite data, AIS vessel tracking, oceanographic models, and AI multi-agent simulation.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
