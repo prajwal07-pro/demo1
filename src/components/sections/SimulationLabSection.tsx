@@ -11,10 +11,12 @@ import {
   Fuel, 
   TrendingUp,
   Sliders,
-  ChevronRight
+  ChevronRight,
+  Sparkles
 } from 'lucide-react';
 import { simulationService } from '../../services/simulationService';
-import { SimulationScenario } from '../../types/marine';
+import { SimulationScenario, SimulationHistoryEntry } from '../../types/marine';
+import { SimulationHistoryLog } from '../simulation/SimulationHistoryLog';
 
 interface SimulationLabSectionProps {
   initialScenarioId?: string;
@@ -26,7 +28,9 @@ export const SimulationLabSection: React.FC<SimulationLabSectionProps> = ({
   onOpenInMap
 }) => {
   const [scenarios, setScenarios] = useState<SimulationScenario[]>(simulationService.getScenarios());
+  const [history, setHistory] = useState<SimulationHistoryEntry[]>(simulationService.getHistory());
   const [activeScenarioId, setActiveScenarioId] = useState(initialScenarioId);
+  const [selectedRunId, setSelectedRunId] = useState<string | undefined>(undefined);
   const [isSimulating, setIsSimulating] = useState(false);
 
   const activeScenario = scenarios.find(s => s.id === activeScenarioId) || scenarios[0];
@@ -39,21 +43,37 @@ export const SimulationLabSection: React.FC<SimulationLabSectionProps> = ({
   const handleRunSimulation = () => {
     setIsSimulating(true);
     setTimeout(() => {
-      const updated = simulationService.runSimulation(activeScenarioId, {
+      const { updatedScenario, historyEntry } = simulationService.runSimulation(activeScenarioId, {
         windSpeedKnots: windKnots,
         waveHeightMeters: waveHeight,
         timeHorizonHours: timeHorizon
       });
-      setScenarios(simulationService.getScenarios());
+      setScenarios([...simulationService.getScenarios()]);
+      setHistory([...simulationService.getHistory()]);
+      setSelectedRunId(historyEntry.id);
       setIsSimulating(false);
     }, 600);
   };
 
+  const handleSelectHistoricalRun = (entry: SimulationHistoryEntry) => {
+    setActiveScenarioId(entry.scenarioId);
+    setWindKnots(entry.parameters.windSpeedKnots);
+    setWaveHeight(entry.parameters.waveHeightMeters);
+    setTimeHorizon(entry.parameters.timeHorizonHours);
+    setSelectedRunId(entry.id);
+  };
+
+  const handleClearHistory = () => {
+    simulationService.clearHistory();
+    setHistory([]);
+    setSelectedRunId(undefined);
+  };
+
   return (
     <section id="simulation" className="w-full bg-[#020914] py-16 px-4 sm:px-6 lg:px-8 border-b border-cyan-500/10">
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-7xl mx-auto space-y-10">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-10">
+        <div className="flex flex-col md:flex-row md:items-end justify-between">
           <div>
             <div className="flex items-center gap-2 text-xs font-mono tracking-widest text-teal-400 uppercase mb-2">
               <Activity className="w-3.5 h-3.5" />
@@ -292,7 +312,16 @@ export const SimulationLabSection: React.FC<SimulationLabSectionProps> = ({
             </div>
           </div>
         </div>
+
+        {/* Dedicated Simulation History & Variance Log Component */}
+        <SimulationHistoryLog
+          history={history}
+          selectedRunId={selectedRunId}
+          onSelectRun={handleSelectHistoricalRun}
+          onClearHistory={handleClearHistory}
+        />
       </div>
     </section>
   );
 };
+

@@ -91,6 +91,48 @@ export interface SimulationScenario {
   };
 }
 
+export interface VarianceTrendPoint {
+  hour: number;
+  variancePct: number;
+  windDeltaKnots: number;
+  waveDeltaMeters: number;
+}
+
+export interface SimulationVarianceData {
+  baselineWindKnots: number;
+  actualWindKnots: number;
+  windDeltaKnots: number;
+  baselineWaveMeters: number;
+  actualWaveMeters: number;
+  waveDeltaMeters: number;
+  sstVarianceCelsius: number;
+  stokesDriftVarianceMps: number;
+  chlorophyllDisplacementKm?: number;
+  varianceSeverity: 'low' | 'moderate' | 'high' | 'critical';
+  trendPoints: VarianceTrendPoint[];
+}
+
+export interface SimulationHistoryEntry {
+  id: string;
+  runNumber: number;
+  timestamp: string;
+  scenarioId: string;
+  scenarioTitle: string;
+  category: 'cyclone' | 'pfz' | 'search_rescue' | 'spill' | 'route_opt';
+  outcomeSummary: string;
+  riskReductionPct: number;
+  fuelSavingsPct?: number;
+  etaChangeHours?: number;
+  parameters: {
+    windSpeedKnots: number;
+    waveHeightMeters: number;
+    timeHorizonHours: number;
+    vesselType: string;
+    location: string;
+  };
+  variance: SimulationVarianceData;
+}
+
 export interface LearningQuest {
   id: string;
   title: string;
